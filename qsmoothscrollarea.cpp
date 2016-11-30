@@ -167,6 +167,7 @@ void QSmoothScrollArea::slotSmoothMove()
     if ((bigStepModifier() & Qt::ALT) || (smallStepModifier() & Qt::ALT))
         orientation = Qt::Vertical;
 
+	qDebug() << qRound(totalDelta);
     QWheelEvent e(
                 lastWheelEvent->pos(),
                 lastWheelEvent->globalPos(),
