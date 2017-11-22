@@ -19,7 +19,8 @@ public:
         CONSTANT,
         LINEAR,
         QUADRATIC,
-        COSINE
+        COSINE,
+        POW
     };
     SmoothMode smoothMode();
     void setSmoothMode(SmoothMode mode);

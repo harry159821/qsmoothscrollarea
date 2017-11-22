@@ -16,9 +16,11 @@ QSmoothScrollArea::QSmoothScrollArea(QWidget *parent) :
     smoothMoveTimer = new QTimer(this);
     connect(smoothMoveTimer, SIGNAL(timeout()), this, SLOT(slotSmoothMove()));
 
-    m_fps = 60;
-    m_duration = 400;
-    m_smoothMode = COSINE;
+    // m_fps = 60;
+    m_fps = 200;
+    // m_duration = 400;
+    m_duration = 230;
+    m_smoothMode = POW;
     m_acceleration = 2.5;
 
     m_smallStepModifier = Qt::SHIFT;
@@ -143,6 +145,9 @@ void QSmoothScrollArea::wheelEvent(QWheelEvent *e)
     if (acceration() > 0)
         delta += delta * acceration() * accerationRatio;
 
+    if (!stepsLeftQueue.isEmpty())
+        stepsLeftQueue.clear();
+
     stepsLeftQueue.push_back(qMakePair(delta, stepsTotal));
     smoothMoveTimer->start(1000 / m_fps);
 }
@@ -167,7 +172,7 @@ void QSmoothScrollArea::slotSmoothMove()
     if ((bigStepModifier() & Qt::ALT) || (smallStepModifier() & Qt::ALT))
         orientation = Qt::Vertical;
 
-	qDebug() << qRound(totalDelta);
+	// qDebug() << qRound(totalDelta);
     QWheelEvent e(
                 lastWheelEvent->pos(),
                 lastWheelEvent->globalPos(),
@@ -213,7 +218,13 @@ double QSmoothScrollArea::subDelta(double delta, int stepsLeft)
 
     case COSINE:
         return (cos(x * M_PI / m) + 1.0) / (2.0*m) * delta;
+
+    case POW:
+        qreal current_time = ((stepsTotal-stepsLeft)/stepsTotal * m_duration / 1000.0);
+        // return 0.05 * qPow(current_time + 0.016667, -2.018) / 14 / 140 * delta;
+        return 0.05 * qPow(current_time + 0.016667, -2.018) / 40 / 140 * delta;
         break;
+        
     }
 
     return 0;

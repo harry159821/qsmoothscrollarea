@@ -17,9 +17,9 @@ int main(int argc, char * argv[])
     imageLabel->setPixmap(QPixmap::fromImage(image));
 
     QSmoothScrollArea *scrollArea = new QSmoothScrollArea(win);
-	scrollArea->setSmoothMode(QSmoothScrollArea::LINEAR);
+	scrollArea->setSmoothMode(QSmoothScrollArea::POW);
     scrollArea->setWidget(imageLabel);
-	scrollArea->setDuration(400);
+	scrollArea->setDuration(300);
 	
     QGridLayout *layout = new QGridLayout(win);
 	layout->addWidget(scrollArea);
@@ -27,7 +27,7 @@ int main(int argc, char * argv[])
 	win->setLayout(layout);
 
     win->show();
-	win->resize(500,500);
+	win->resize(247,480);
 
     return app.exec();
 }

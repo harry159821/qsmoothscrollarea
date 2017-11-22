@@ -11,13 +11,16 @@ class QSmoothScrollArea(QtGui.QScrollArea):
         self.smoothMoveTimer = QTimer(self)
         self.smoothMoveTimer.timeout.connect(self.slotSmoothMove)
 
-        self.m_fps = 60.0
+        self.m_fps = 200
+        # self.m_fps = 90
+        # self.m_duration = 200.0
         self.m_duration = 300.0
         self.m_smoothMode = "NO_SMOOTH"
         self.m_smoothMode = "LINEAR"
         self.m_smoothMode = "COSINE"
         self.m_smoothMode = "QUADRATIC"
         self.m_smoothMode = "CONSTANT"
+        self.m_smoothMode = "EXP"
         self.m_acceleration = 2.5
 
         self.m_smallStepModifier = QtCore.Qt.SHIFT
@@ -74,7 +77,6 @@ class QSmoothScrollArea(QtGui.QScrollArea):
         self.m_bigStepModifier = bigStepModifier
 
     def wheelEvent(self,e):
-        print time.time()," wheelEvent"
         if(self.m_smoothMode == "NO_SMOOTH"):
             QtGui.QScrollArea.wheelEvent(e)
             return
@@ -94,7 +96,7 @@ class QSmoothScrollArea(QtGui.QScrollArea):
             self.lastWheelEvent = e
 
         self.stepsTotal = self.m_fps * self.m_duration / 1000.0
-        print self.stepsTotal
+        # print self.stepsTotal
         multiplier = 1.0
         if (QtGui.QApplication.keyboardModifiers() and self.smallStepModifier()):
             multiplier *= self.smallStepRatio()
@@ -103,6 +105,9 @@ class QSmoothScrollArea(QtGui.QScrollArea):
         delta = e.delta() * multiplier
         if (self.acceration() > 0):
             delta += delta * self.acceration() * self.accerationRatio
+
+        if len(self.stepsLeftQueue):
+            self.stepsLeftQueue = []
 
         self.stepsLeftQueue.append([delta, self.stepsTotal])
         self.smoothMoveTimer.start(1000.0 / self.m_fps)
@@ -159,6 +164,18 @@ class QSmoothScrollArea(QtGui.QScrollArea):
 
         if self.m_smoothMode == "COSINE":
             return (math.cos(x * math.pi / m) + 1.0) / (2.0*m) * delta
+
+        if self.m_smoothMode == "EXP":
+            value = (math.cos(x * math.pi / m) + 1.0) / (2.0*m) * delta
+            current_time = ((self.stepsTotal-stepsLeft)/self.stepsTotal * self.m_duration / 1000.0)
+            
+            def microsoft_pow_function(x):
+                # return 0.06909 * pow(x, -2.018) / 4 / 140 * delta
+                # return 0.04 * pow(x, -2.018) / 4 / 140 * delta # 90 fps
+                return 0.05 * pow(x, -2.018) / 5 / 140 * delta # 200 fps
+
+            value = microsoft_pow_function(current_time + 0.016667)
+            return value
             
         return 0
 
@@ -183,7 +200,8 @@ class Windows(QtGui.QWidget):
         imageLabel2.setPixmap(QPixmap.fromImage(QImage("test.png")))
         self.scrollArea2.setWidget(imageLabel2)
 
-        self.resize(1000,500)
+        # self.resize(1000,500)
+        self.resize(248 * 2,480)
 
 if __name__ == '__main__':
     app = QtGui.QApplication([])
